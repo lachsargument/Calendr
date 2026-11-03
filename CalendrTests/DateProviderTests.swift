@@ -67,7 +67,7 @@ class DateProviderTests {
         #expect(dateProvider.calendar.timeZone.identifier == "GMT")
         #expect(updatedCalendar.value == nil)
 
-        system.calendar = .gregorian.with(timeZone: .init(identifier: "Asia/Tokyo")!)
+        system.timeZone = .init(identifier: "Asia/Tokyo")!
         notificationCenter.post(name: .NSSystemTimeZoneDidChange, object: nil)
 
         #expect(dateProvider.calendar.timeZone.identifier == "Asia/Tokyo")
@@ -86,11 +86,12 @@ class DateProviderTests {
         #expect(dateProvider.calendar.timeZone.identifier == "America/Los_Angeles")
         #expect(updatedCalendar.value == nil)
 
-        system.calendar = .gregorian.with(timeZone: .init(identifier: "Asia/Tokyo")!)
+        system.timeZone = .init(identifier: "Asia/Tokyo")!
         notificationCenter.post(name: .NSSystemTimeZoneDidChange, object: nil)
 
         #expect(dateProvider.calendar.timeZone.identifier == "America/Los_Angeles")
         #expect(updatedCalendar.value?.timeZone.identifier == "America/Los_Angeles")
+        #expect(system.calendar.timeZone.identifier == "America/Los_Angeles")
     }
 
     @Test
@@ -106,6 +107,7 @@ class DateProviderTests {
         localStorage.timeZone = "Europe/London"
 
         #expect(dateProvider.calendar.timeZone.identifier == "Europe/London")
+        #expect(system.calendar.timeZone.identifier == "Europe/London")
         #expect(updatedCalendar.value?.timeZone.identifier == "Europe/London")
     }
 
@@ -121,7 +123,7 @@ class DateProviderTests {
         let updatedCalendar = observeCalendarUpdates(from: dateProvider)
 
         let format = "dd/MM/yyyy HH:mm"
-        let systemFormatter = DateFormatter(format: format, calendar: system.calendar)
+        let systemFormatter = DateFormatter(format: format, calendar: .gregorian.with(timeZone: system.timeZone))
         let customFormatter = DateFormatter(format: format, calendar: dateProvider.calendar)
 
         #expect(systemFormatter.string(from: dateProvider.now) == "02/11/2026 21:00")
@@ -168,6 +170,7 @@ class DateProviderTests {
 private class MockSystemTimeProvider: DateProvider.SystemTimeProviding {
     var date: Date
     var calendar: Calendar
+    var timeZone: TimeZone
 
     init(
         date: Date = .make(year: 2026, month: 11, day: 2, hour: 12),
@@ -175,6 +178,11 @@ private class MockSystemTimeProvider: DateProvider.SystemTimeProviding {
     ) {
         self.date = date
         self.calendar = calendar
+        self.timeZone = calendar.timeZone
+    }
+
+    func setProcessTimeZone(_ timeZone: TimeZone) {
+        calendar = calendar.with(timeZone: timeZone)
     }
 }
 

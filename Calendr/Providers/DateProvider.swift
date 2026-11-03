@@ -30,12 +30,23 @@ class DateProvider: DateProviding {
 
     protocol SystemTimeProviding {
         var date: Date { get }
+        /// In the process time zone
         var calendar: Calendar { get }
+        /// The system's time zone, unaffected by the process time zone
+        var timeZone: TimeZone { get }
+        func setProcessTimeZone(_ timeZone: TimeZone)
     }
 
     private class SystemTimeProvider: SystemTimeProviding {
         var date: Date { .init() }
         var calendar: Calendar { .current }
+        var timeZone: TimeZone {
+            NSTimeZone.resetSystemTimeZone()
+            return NSTimeZone.system
+        }
+        func setProcessTimeZone(_ timeZone: TimeZone) {
+            NSTimeZone.default = timeZone
+        }
     }
 
     private(set) var calendar: Calendar
@@ -71,7 +82,7 @@ class DateProvider: DateProviding {
             .flatMapLatest { calendar -> Observable<Void> in
                 let now = system.date
                 guard
-                    calendar.timeZone != system.calendar.timeZone,
+                    calendar.timeZone != system.timeZone,
                     let midnight = calendar.nextDate(
                         after: now,
                         matching: DateComponents(hour: 0, minute: 0, second: 0),
@@ -96,8 +107,9 @@ class DateProvider: DateProviding {
             ))
             .compactMap { [weak self] firstWeekday, timeZone in
                 guard let self else { return nil }
-                let timeZone = TimeZone(identifier: timeZone) ?? system.calendar.timeZone
-                calendar = system.calendar.with(timeZone: timeZone)
+                // EventKit resolves all-day (floating) dates in the process time zone, so it must be the app's.
+                system.setProcessTimeZone(TimeZone(identifier: timeZone) ?? system.timeZone)
+                calendar = system.calendar
                 calendar.firstWeekday = firstWeekday
                 return calendar
             }
