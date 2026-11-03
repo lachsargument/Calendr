@@ -208,7 +208,7 @@ class CalendarViewModel {
             return cellViewModels.map { vm in
                 vm.with(
                     isHoliday: holidays.contains { event in
-                        dateProvider.calendar.isDay(vm.date, inDays: (event.start, event.end))
+                        dateProvider.systemCalendar.isDay(vm.date, inDays: (event.start, event.end))
                     }
                 )
             }
@@ -230,7 +230,7 @@ class CalendarViewModel {
             cellViewModels.map { vm in
 
                 let dateHolidays = holidays?.filter {
-                    dateProvider.calendar.isDay(vm.date, inDays: ($0.start, $0.end))
+                    dateProvider.systemCalendar.isDay(vm.date, inDays: ($0.start, $0.end))
                 } ?? []
 
                 let plugin: (any CalendarCellPlugin)? = {
@@ -295,7 +295,8 @@ class CalendarViewModel {
 
                 let eventsWithFuture = events.filter { event in
 
-                    let calendar = dateProvider.calendar
+                    // The start/end of a floating event should be set as if they were in the system time zone.
+                    let calendar = event.isAllDay ? dateProvider.systemCalendar : dateProvider.calendar
 
                     // check if cell date intersects event
                     if calendar.isDay(vm.date, inDays: (event.start, event.end)) {
