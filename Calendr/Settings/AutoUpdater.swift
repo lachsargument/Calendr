@@ -202,15 +202,16 @@ class AutoUpdater: AutoUpdating {
     }
 
     func checkRelease(userInitiated: Bool) async {
-        guard await notificationProvider.requestAuthorization() else { return }
-        do {
-            try await checkReleaseImpl(userInitiated: userInitiated)
-        } catch {
-            if userInitiated {
-                errorObserver.onNext(.check(.error(error.localizedDescription)))
-            }
-            statusObserver.onNext(.initial)
-        }
+        // Disabled in this fork: upstream releases would replace it with a build without the time zone feature.
+        // guard await notificationProvider.requestAuthorization() else { return }
+        // do {
+        //     try await checkReleaseImpl(userInitiated: userInitiated)
+        // } catch {
+        //     if userInitiated {
+        //         errorObserver.onNext(.check(.error(error.localizedDescription)))
+        //     }
+        //     statusObserver.onNext(.initial)
+        // }
     }
 
     func downloadAndInstall() {
