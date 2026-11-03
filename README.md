@@ -1,3 +1,5 @@
+This fork add an experimental support to use a custom app time zone than the system one. This feature is now implemented by setting the process time zone. It's not part of the original project, so please don't report issues about it to [pakerwreah/Calendr](https://github.com/pakerwreah/Calendr).
+
 # Calendr
 
 [![install](https://img.shields.io/badge/How_to_install-gray?label=📥)](https://github.com/pakerwreah/Calendr/issues/217)
