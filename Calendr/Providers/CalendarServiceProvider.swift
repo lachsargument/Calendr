@@ -346,7 +346,8 @@ class CalendarServiceProvider: CalendarServiceProviding {
                 event.startDate = dates.start
                 event.endDate = dates.end
                 event.isAllDay = isAllDay
-                event.timeZone = timeZone
+                // All-day events are floating; a time zone turns them into timed events.
+                event.timeZone = isAllDay ? nil : timeZone
                 event.location = location
                 event.url = url
                 event.notes = notes
@@ -510,9 +511,14 @@ class CalendarServiceProvider: CalendarServiceProviding {
     private func eventDates(start: Date, end: Date, isAllDay: Bool, timeZone: TimeZone) -> (start: Date, end: Date) {
         guard isAllDay else { return (start, end) }
 
-        let calendar = dateProvider.calendar.with(timeZone: timeZone)
-        let startDay = calendar.startOfDay(for: start)
-        let endDay = calendar.startOfDay(for: end)
+        // EventKit reads floating all-day dates in the process time zone, which is the app's.
+        let source = dateProvider.calendar.with(timeZone: timeZone)
+        let calendar = dateProvider.calendar
+        func day(_ date: Date) -> Date {
+            calendar.date(from: source.dateComponents([.year, .month, .day], from: date))!
+        }
+        let startDay = day(start)
+        let endDay = day(end)
         let exclusiveEnd = calendar.date(byAdding: .day, value: 1, to: endDay)!
 
         return (startDay, exclusiveEnd)
