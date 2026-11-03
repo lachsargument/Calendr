@@ -99,9 +99,10 @@ private class ContextMenuItem<Action: ContextMenuAction>: NSMenuItem {
         self.target = self
         self.image = action.icon
 
-        if #available(macOS 27.0, *) {
-            self.preferredImageVisibility = .visible
-        }
+        // Commented out in this fork: the local SDK (Xcode 26.3) doesn't have this macOS 27 API.
+        // if #available(macOS 27.0, *) {
+        //     self.preferredImageVisibility = .visible
+        // }
     }
 
     @objc private func selected() {
